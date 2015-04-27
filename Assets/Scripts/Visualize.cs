@@ -3,6 +3,7 @@ using ConvexHull;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 /// <summary>
 /// Display the convex hull.
@@ -11,28 +12,44 @@ public class Visualize : MonoBehaviour
 {
     private List<Vector2> input;
     private List<Vector2> output;
+    private GameObject points;
 
     /// <summary>
     /// Generate the convex hull.
     /// </summary>
-    void Start()
+    private void Update()
     {
-        // Generate random points.
-        input = VectorUtils.RandomVectorList(50);
-
-        // Create the game object representation of the points.
-        GameObject points = new GameObject { name = "Points" };
-        foreach (Vector2 v in input)
+        // Generate a new set of points when the space bar is pressed.
+        if(Input.GetKeyDown(KeyCode.Space))
         {
-            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.transform.parent = points.transform;
-            sphere.transform.position = new Vector3(v.x, v.y, 0);
-            sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        }
+            // Destroy the previous game objects.
+            if(points != null)
+            {
+                Destroy(points);
+            }
 
-        // Calculate the convex hull.
-        IConvexHull convexHull = new GrahamScan();
-        output = convexHull.Compute(input);
+            // Generate random points.
+            input = VectorUtils.RandomVectorList(40, 20);
+
+            // Create the game object representation of the points.
+            points = new GameObject { name = "Points" };
+            foreach (Vector2 v in input)
+            {
+                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                sphere.transform.parent = points.transform;
+                sphere.transform.position = new Vector3(v.x, v.y, 0);
+                sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+            }
+
+            Stopwatch stopwatch = Stopwatch.StartNew();
+
+            // Calculate the convex hull.
+            IConvexHull convexHull = new GrahamScan();
+            output = convexHull.Compute(input);
+
+            stopwatch.Stop();
+            UnityEngine.Debug.Log("Elapsed time: " + stopwatch.ElapsedMilliseconds);
+        }
     }
 
     /// <summary>
@@ -40,6 +57,12 @@ public class Visualize : MonoBehaviour
     /// </summary>
     private void OnPostRender()
     {
+        // Sucky error checking :P
+        if(output == null)
+        {
+            return;
+        }
+
         GL.Begin(GL.LINES);
         GL.Color(new Color(0.0f, 1.0f, 0.0f, 1.0f));
 

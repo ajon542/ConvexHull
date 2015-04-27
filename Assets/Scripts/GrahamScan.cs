@@ -69,44 +69,53 @@
             SwapLowestY(input);
 
             // Calculate angle and distance for each vector based on the lowest point.
-            List<VectorAttributes> vectorAttributeList = new List<VectorAttributes>();
+            // The idea is to update the vector in the dictionary if it has a lesser distance
+            // to the starting point than the new vector.
+            Dictionary<double, VectorAttributes> dict = new Dictionary<double, VectorAttributes>();
+
             foreach (Vector2 v in input)
             {
+                // Create the vector angle and distance attributes.
                 VectorAttributes vectorAttr = new VectorAttributes
                 {
                     Vector = v,
-                    // TODO: I'm sure this angle calculation can be replaced with orientation.
                     Angle = VectorUtils.FindAngle(lowest, v),
                     DistanceSquared = VectorUtils.DistanceSquared(lowest, v)
                 };
-                vectorAttributeList.Add(vectorAttr);
+
+                // Add the vector to the dictionary.
+                if (dict.ContainsKey(vectorAttr.Angle))
+                {
+                    // If the distance is greater, update the value in the dictionary.
+                    if(dict[vectorAttr.Angle].DistanceSquared < vectorAttr.DistanceSquared)
+                    {
+                        dict[vectorAttr.Angle] = vectorAttr;
+                    }
+                }
+                else
+                {
+                    // A vector for this angle doesn't exist, so add one.
+                    dict.Add(vectorAttr.Angle, vectorAttr);
+                }
             }
+
+            // Create a list of the vectors.
+            VectorAttributes lowestVectorAttr = new VectorAttributes
+            {
+                Vector = input[0],
+                Angle = VectorUtils.FindAngle(lowest, input[0]),
+                DistanceSquared = VectorUtils.DistanceSquared(lowest, input[0])
+            };
+            List<VectorAttributes> vectorAttributeList = new List<VectorAttributes>();
+            vectorAttributeList.Add(lowestVectorAttr);
+            vectorAttributeList.AddRange(dict.Values.ToList());
+
+            Debug.Log("Vector Count");
+            Debug.Log("Before: " + input.Count);
+            Debug.Log(" After: " + vectorAttributeList.Count);
 
             // Sort remaining vectors based on angle with lowest point.
             vectorAttributeList = vectorAttributeList.OrderBy(v => v.Angle).ToList();
-
-            // Remove all points with the same angle except for the furthest.
-            // TODO: Can this be improved? Maybe a hashset based on angle that
-            // only inserts if the distance is greater than the item currently contained.
-            
-            // Skip the first point as we know this is definitely in the convex hull
-            // and every other point with the same angle will definitely be further from it.
-            int index = 1;
-            while (index < vectorAttributeList.Count - 1)
-            {
-                while ((index < vectorAttributeList.Count - 1) && (vectorAttributeList[index].Angle == vectorAttributeList[index + 1].Angle))
-                {
-                    if (vectorAttributeList[index].DistanceSquared > vectorAttributeList[index + 1].DistanceSquared)
-                    {
-                        vectorAttributeList.RemoveAt(index + 1);
-                    }
-                    else if (vectorAttributeList[index].DistanceSquared < vectorAttributeList[index + 1].DistanceSquared)
-                    {
-                        vectorAttributeList.RemoveAt(index);
-                    }
-                }
-                ++index;
-            }
 
             // The guts of the Graham Scan algorithm.
             List<Vector2> output = new List<Vector2>();
