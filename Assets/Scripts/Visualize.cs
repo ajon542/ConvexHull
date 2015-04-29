@@ -3,7 +3,6 @@ using ConvexHull;
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 /// <summary>
 /// Display the convex hull.
@@ -14,42 +13,40 @@ public class Visualize : MonoBehaviour
     private List<Vector2> output;
     private GameObject points;
 
-    /// <summary>
-    /// Generate the convex hull.
-    /// </summary>
-    private void Update()
+    public int numberOfPoints = 2000;
+
+    public void CalculateConvexHull()
     {
-        // Generate a new set of points when the space bar is pressed.
-        if(Input.GetKeyDown(KeyCode.Space))
+        // Destroy the previous game objects.
+        if (points != null)
         {
-            // Destroy the previous game objects.
-            if(points != null)
-            {
-                Destroy(points);
-            }
-
-            // Generate random points.
-            input = VectorUtils.RandomVectorList(40, 20);
-
-            // Create the game object representation of the points.
-            points = new GameObject { name = "Points" };
-            foreach (Vector2 v in input)
-            {
-                GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                sphere.transform.parent = points.transform;
-                sphere.transform.position = new Vector3(v.x, v.y, 0);
-                sphere.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            }
-
-            Stopwatch stopwatch = Stopwatch.StartNew();
-
-            // Calculate the convex hull.
-            IConvexHull convexHull = new GrahamScan();
-            output = convexHull.Compute(input);
-
-            stopwatch.Stop();
-            UnityEngine.Debug.Log("Elapsed time: " + stopwatch.ElapsedMilliseconds);
+            Destroy(points);
         }
+
+        // Generate random points.
+        input = VectorUtils.RandomVectorList(numberOfPoints);
+
+        // Create the game object representation of the points.
+        points = new GameObject { name = "Points" };
+
+        foreach (Vector2 v in input)
+        {
+            GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            sphere.transform.parent = points.transform;
+            sphere.transform.position = new Vector3(v.x, v.y, 0);
+            sphere.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        }
+
+        System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+        watch.Start();
+
+        // Calculate the convex hull.
+        IConvexHull convexHull = new GrahamScan();
+        output = convexHull.Compute(input);
+
+        watch.Start();
+        Debug.Log("ConvexHull elapsed time: " + watch.ElapsedMilliseconds);
+
     }
 
     /// <summary>

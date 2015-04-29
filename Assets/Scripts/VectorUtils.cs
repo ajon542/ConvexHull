@@ -68,15 +68,19 @@ public class VectorUtils
     /// </summary>
     /// <param name="count">The number of vectors to generate.</param>
     /// <returns>A list of unique vectors with random coordinates.</returns>
-    public static List<Vector2> RandomVectorList(int count, int max)
+    public static List<Vector2> RandomVectorList(int count)
     {
+        int max = 2000;
+
         System.Random rand = new System.Random();
         HashSet<Vector2> set = new HashSet<Vector2>();
         List<Vector2> list = new List<Vector2>();
 
         while (set.Count < count)
         {
-            Vector2 v = new Vector2(rand.Next(max), rand.Next(max));
+            float x = (float)rand.Next(max) / 100;
+            float y = (float)rand.Next(max) / 100;
+            Vector2 v = new Vector2(x, y);
             if(set.Add(v))
             {
                 list.Add(v);

@@ -1,6 +1,7 @@
 ﻿namespace ConvexHull
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using UnityEngine;
@@ -109,10 +110,6 @@
             List<VectorAttributes> vectorAttributeList = new List<VectorAttributes>();
             vectorAttributeList.Add(lowestVectorAttr);
             vectorAttributeList.AddRange(dict.Values.ToList());
-
-            Debug.Log("Vector Count");
-            Debug.Log("Before: " + input.Count);
-            Debug.Log(" After: " + vectorAttributeList.Count);
 
             // Sort remaining vectors based on angle with lowest point.
             vectorAttributeList = vectorAttributeList.OrderBy(v => v.Angle).ToList();
